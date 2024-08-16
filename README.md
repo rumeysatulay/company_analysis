@@ -1,10 +1,10 @@
-## Company Analysis
+# Company Analysis
 
-# Overview 
+## Overview 
 
-# Dataset
+## Dataset
 
-# Project Goals
+## Project Goals
 
-# Outcomes
+## Outcomes
 
