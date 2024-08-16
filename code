@@ -408,3 +408,5 @@ SELECT
 	NOW() AS current_date_and_time,
     DATE_SUB(NOW(), INTERVAL 1 MONTH) AS month_early,
     DATE_SUB(NOW(), INTERVAL -1 YEAR) AS year_later;
+
+
