@@ -3,7 +3,7 @@
 ## Overview 
 
 In this project, I examine company insights using an imaginary dataset. The dataset includes employee information such as department, salary contracts, and gender. With this information, we can gain valuable insights into the company.
-
+ 
 ## Dataset
 
 The dataset used in this project is sourced from a Udemy course: [The Business Intelligence Analyst Course](https://www.udemy.com/course/the-business-intelligence-analyst-course-2018/?couponCode=KEEPLEARNING). It consists of five tables:
