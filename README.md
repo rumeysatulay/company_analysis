@@ -7,11 +7,11 @@ In this project, I examine company insights using an imaginary dataset. The data
 ## Dataset
 
 The dataset used in this project is sourced from a Udemy course: [The Business Intelligence Analyst Course](https://www.udemy.com/course/the-business-intelligence-analyst-course-2018/?couponCode=KEEPLEARNING). It consists of five tables:
-1. **Departments**: `dept_no`, `dept_name`
+1. **departments**: `dept_no`, `dept_name`
 2. **dept_emp**: `emp_no`, `dept_no`, `from_date`, `to_date`
 3. **dept_manager**: `emp_no`, `dept_no`, `from_date`, `to_date`
-4. **Employees**: `emp_no`, `birth_date`, `first_name`, `last_name`, `gender`, `hire_date`
-5. **Salaries**: `emp_no`, `salary`, `from_date`, `to_date`"
+4. **employees**: `emp_no`, `birth_date`, `first_name`, `last_name`, `gender`, `hire_date`
+5. **salaries**: `emp_no`, `salary`, `from_date`, `to_date`"
 
 ## Project Goals
 
@@ -23,7 +23,17 @@ SQL was the cornerstone of my analysis, enabling me to thoroughly examine the da
 
 ## Outcomes
 
-Firstly, I examine the number of employees by year to compare genders. Despite the total number of employees over the years, female employees consistently make up 40% of the employees.
+- Firstly, I examine the number of employees by year to compare genders. Despite the total number of employees over the years, female employees consistently make up 40% of the employees.
 
 ![1](https://github.com/user-attachments/assets/3865d10c-9700-49c0-b7ee-f199b8a70cee)
+
+- Secondly, we analyzed the average salaries of male and female employees throughout the year. As shown in the graph, the salary trend has followed a similar pattern for both genders. The salary increases over the years have also been at an equal rate.
+
+![2](https://github.com/user-attachments/assets/6944dbce-1629-4e77-b96b-c85b3aaacb33)
+
+- Another analysis focused on the changes in average salaries of employees across different departments over the years. As you can see, the average salary increase for employees in all departments has been very similar. This could be attributed to both the company’s growth and nationwide inflation. The department with the highest average salary is Sales, followed by Marketing and Finance. On the other hand, the department with the lowest average salary is Human Resources, with Quality Service also being one of the lower-paid departments. Development, Production, and Research departments have average salaries below the overall average, with similar levels among them
+
+![3](https://github.com/user-attachments/assets/85dfed34-5989-4200-9bf6-4d4978ffb307)
+
+
 
