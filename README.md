@@ -47,8 +47,9 @@ SQL was the cornerstone of my analysis, enabling me to thoroughly examine the da
 
 ![7](https://github.com/user-attachments/assets/31dd9304-8eaf-40d7-9be0-c657499bef6b)
 
+- Finally, let's examine how many years, on average, employees work at the company. The maximum tenure of an employee at the company is 37 years, and the average duration of employment for all employees is 24 years. This information suggests that the company offers favorable working conditions, leading employees to stay for many years.
 
-
+![9](https://github.com/user-attachments/assets/7fb1a1a0-d578-4d6c-920d-17d631ab6fb8)
 
 
 
