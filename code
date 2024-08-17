@@ -1,412 +1,126 @@
-SELECT e.first_name, e.last_name
-FROM employees e 
-WHERE e.emp_no IN (SELECT dm.emp_no FROM dept_manager dm);
+-- TABLE 1
 
-SELECT e.first_name, e.last_name
-FROM employees e 
-INNER JOIN dept_manager AS dm ON e.emp_no = dm.emp_no;
-
-
-SELECT * from dept_manager 
-WHERE emp_no IN (SELECT emp_no FROM employees WHERE hire_date between '1990-01-01' AND '1995-01-01');
-
-
-select * from employees where emp_no = 110420;
-
-SELECT * FROM employees e
-WHERE exists (SELECT  * FROM titles t WHERE t.emp_no = e.emp_no AND title ='Assistant Engineer');
+    SELECT
+        YEAR(de.from_date) AS calendar, 
+        e.gender,
+        COUNT(e.emp_no) AS no_employees
+    FROM 
+        employees e 
+    JOIN dept_emp de ON e.emp_no = de.emp_no
+GROUP BY calendar, e.gender
+ORDER BY calendar;
 
 
-select * from dept_emp where emp_no = 110039;
-
-DROP procedure if exists select_employees;
-
-delimiter $$ 
-create procedure select_employees()
-BEGIN
-select * from employees limit 1000;
-END $$
-DELIMITER ;
-
-call select_employees();
-
-
-DROP procedure if exists avg_salary;
-
-delimiter $$ 
-create procedure avg_salary()
-BEGIN
-select emp_no,avg(salary) from salaries group by emp_no;
-END $$
-DELIMITER ;
-
-call avg_salary();
-
-DROP procedure if exists emp_salary;
-
-DELIMITER $$ 
-CREATE PROCEDURE emp_salary(IN p_emp_no INTEGER)
-BEGIN
-SELECT
-	e.first_name, e.last_name, s.salary, s.from_date, s.to_date
-FROM employees e JOIN
-	 salaries s ON e.emp_no = s.emp_no
-WHERE e.emp_no = p_emp_no;
-END$$
-DELIMITER ;
-
-call emp_salary(100001);
-
-
-DROP procedure if exists emp_avg_salary;
-
-DELIMITER $$ 
-CREATE PROCEDURE emp_avg_salary(IN p_emp_no INTEGER)
-BEGIN
-SELECT
-	e.first_name, e.last_name, avg(s.salary)
-FROM employees e JOIN
-	 salaries s ON e.emp_no = s.emp_no
-WHERE e.emp_no = p_emp_no
-GROUP BY e.emp_no;
-END$$
-DELIMITER ;
-
-call emp_avg_salary(100001);
-
-DROP procedure if exists emp_avg_salary_out;
-
-DELIMITER $$
-CREATE procedure emp_avg_salary_out(IN p_emp_no INTEGER, OUT p_avg_salary DECIMAL(10,2))
-BEGIN
-SELECT 
-	AVG(s.salary) INTO p_avg_salary FROM
-    employees e
-    JOIN
-    salaries s ON e.emp_no = s.emp_no
-    WHERE e.emp_no = p_emp_no;
-END$$
-
-DELIMITER ;
-
-DROP procedure if exists emp_info;
-
-DELIMITER $$
-CREATE procedure emp_info(IN p_name VARCHAR(255), IN p_last VARCHAR(255), OUT p_emp_no INTEGER)
-BEGIN
-SELECT 
-	emp_no INTO p_emp_no FROM
-    employees 
-    WHERE first_name=p_name AND last_name=p_last;
-END$$
-
-DELIMITER ;
-
-
-DROP FUNCTION IF EXISTS f_emp_avg_salary;
-DELIMITER $$
-CREATE FUNCTION f_emp_avg_salary (p_emp_no INTEGER) RETURNS DECIMAL(10,2)
-DETERMINISTIC
-BEGIN
-
-DECLARE v_avg_salary DECIMAL(10,2);
-
-SELECT
-	AVG(s.salary)
-INTO v_avg_salary FROM
-employees e 
-	JOIN
-salaries s ON e.emp_no = s.emp_no
-WHERE e.emp_no =p_emp_no;
-RETURN v_avg_salary;
-END$$
-DELIMITER ;
-
-DROP FUNCTION IF EXISTS f_emp_info;
-DELIMITER $$
-CREATE FUNCTION f_emp_info (p_first VARCHAR(255), p_last VARCHAR(255)) RETURNS DECIMAL(10,2)
-DETERMINISTIC
-BEGIN
-
-DECLARE v_max_from_date date;
-DECLARE v_new_salary DECIMAL(10,2);
-
-SELECT
-	max(from_date) INTO v_max_from_date
-    FROM
-employees e 
-	JOIN
-salaries s ON e.emp_no = s.emp_no
-WHERE e.first_name =p_first AND e.last_name = p_last;
-
-SELECT
-	s.salary INTO v_new_salary
-    FROM
-employees e 
-	JOIN
-salaries s ON e.emp_no = s.emp_no
-WHERE e.first_name =p_first AND e.last_name = p_last AND s.from_date = v_max_from_date;
-
-RETURN v_new_salary;
-END$$
-DELIMITER ;
-
-
-DROP FUNCTION IF EXISTS f_emp_info;
-DELIMITER $$
-CREATE FUNCTION f_emp_info (p_first VARCHAR(255), p_last VARCHAR(255)) RETURNS DECIMAL(10,2)
-DETERMINISTIC
-BEGIN
-
-DECLARE v_max_from_date date;
-DECLARE v_new_salary DECIMAL(10,2);
-
-
-SELECT max(s.from_date) INTO v_max_from_date
-from salaries s join employees e on s.emp_no = e.emp_no where e.first_name=p_first and p_last = e.last_name;
-
-SELECT s.salary INTO v_new_salary
-from salaries s join employees e on s.emp_no = e.emp_no where e.first_name=p_first and p_last = e.last_name and s.from_date = v_max_from_date;
-RETURN v_new_salary;
-END$$
-DELIMITER ;
-
+-- TABLE 2
 
 SELECT 
-    emp_no,
-    first_name,
-    last_name,
-    CASE
-        WHEN gender = 'M' THEN 'male'
-        WHEN gender = 'F' THEN 'Female'
-    END AS gender
+    e.gender,
+    ROUND(AVG(s.salary), 2) AS avg_salary,
+    YEAR(s.from_date) AS calendar
 FROM
-    employees;
-
-SELECT 
-    emp_no,
-    first_name,
-    last_name,
-    IF(gender = 'M', 'male', 'Female') AS gender
-FROM
-    employees;
-
-
-SELECT 
-    e.emp_no,
-    e.first_name,
-    e.last_name,
-    CASE
-        WHEN dm.emp_no IS NOT NULL THEN 'Manager'
-        ELSE 'Employee'
-    END AS is_manager
-FROM
-    employees e
-        LEFT JOIN
-    dept_manager dm ON e.emp_no = dm.emp_no
-WHERE
-    e.emp_no > 109990;
-
-SELECT 
-    e.emp_no,
-    e.first_name,
-    e.last_name,
-    CASE
-        WHEN max(de.to_date) > sysdate() then 'Current employee'
-        ELSE 'Not an employee'
-    END AS is_employee
-FROM
-    employees e
-       JOIN
-    dept_emp de ON e.emp_no = de.emp_no
-    group by de.emp_no
-LIMIT 100;
-
-SELECT 
-    emp_no, 
-    salary,
-    row_number() over() as row_num
-FROM
-    salaries;
-
-SELECT 
-    emp_no, 
-    salary,
-    row_number() over(partition by emp_no order by salary) as row_num
-FROM
-    salaries;
-
-
-SELECT 
-    emp_no, 
-    salary,
-    row_number() over(partition by emp_no order by salary) as row_num
-FROM
-    salaries;
-
-SELECT 
-    emp_no, 
-    salary,
-    row_number() over w as row_num
-FROM
-    salaries
-    window w as (partition by emp_no order by salary);
-
-
-select 
-	first_name, 
-    emp_no, 
-    row_number() over w as row_num 
-from employees 
-window w as (partition by first_name order by emp_no);
-
-SELECT emp_no, min(salary) 
-from salaries
-group by emp_no;
-
-select a.emp_no, min(a.salary) from 
-(select 
-emp_no, salary, row_number() over w as row_num
-from salaries
-window w as (partition by emp_no order by salary)) a
-group by emp_no;
-
-
-select 
-emp_no, salary, rank() over w as rank_num,dense_rank() over w as dense_rank_num, row_number() over w as row_num
-from 
-salaries
-where emp_no = 11839
-window w as (partition by emp_no order by salary desc);
-
-
-SELECT
-	dm.dept_no, 
-    d.dept_name, 
-    dm.emp_no, 
-    row_number() over(partition by dm.dept_no order by s.salary desc) as department_salary_ranking, 
-    s.salary,
-    s.from_date as salary_from_date,
-    s.to_date as salary_to_date,
-    dm.from_date dept_manager_from_date,
-    dm.to_date as dept_manager_to_date
-FROM dept_manager dm JOIN salaries s 
-   ON dm.emp_no = s.emp_no 
-   AND s.from_date BETWEEN dm.from_date AND dm.to_date
-   AND s.to_date BETWEEN dm.from_date AND dm.to_date
-   JOIN departments d
-   ON d.dept_no = dm.dept_no;
-    
-
-select 
-	e.emp_no, 
-    s.salary, 
-    rank() over(order by s.salary) 
-from employees e join salaries s on e.emp_no = s.emp_no
-where e.emp_no between 10500 and 10600;
-
-SELECT 
-    emp_no,
-    salary,
-    LAG(salary) OVER w as previous_salary,
-    LEAD(salary) OVER w as next_salary, 
-    salary - LAG(salary) OVER w as diff_salary_current_previous,
-    LEAD(salary) OVER w - salary as diff_salary_next_current
-FROM
-    salaries
-WHERE
-    emp_no = 10001
-WINDOW w AS (ORDER BY salary);
-
-SELECT
-	emp_no, salary, from_date, to_date
-FROM 
-	salaries
-WHERE
-	to_date > SYSDATE();
-
-SELECT
-	s1.emp_no, s.salary, s.from_date, s.to_date
-FROM
-	salaries s 
-    join 
-    (SELECT
-	emp_no, MAX(from_date) as from_date
-FROM 
-	salaries
-GROUP BY emp_no) s1
-
-ON s1.emp_no = s.emp_no
-WHERE
-	to_date > SYSDATE() and s.from_date = s1.from_date;
-
-SELECT
-	AVG(salary) AS avg_salary
-FROM
-	salaries;
-
-WITH cte AS (SELECT AVG(salary) AS avg_salary FROM salaries)
-SELECT 
-	SUM(CASE WHEN s.salary > c.avg_salary THEN 1 ELSE 0 END) AS no_of_f_salaries_above_avg,
-    COUNT(s.salary) AS total_no_of_salary_contracts
-FROM 
-	salaries s JOIN
-    employees e ON e.emp_no = s.emp_no AND e.gender = 'F'
-    CROSS JOIN
-    cte c;
-
-
-WITH cte1 AS(
-SELECT 
-    AVG(salary) AS avg_salary
-FROM
-    salaries),
-cte2 AS(
-SELECT 
-    s.emp_no, MAX(s.salary) AS f_highest_salary
-FROM
-    salaries s
+    dept_emp de
         JOIN
-    employees e ON s.emp_no = e.emp_no AND e.gender = 'F'
-GROUP BY s.emp_no)
+    salaries s ON de.emp_no = s.emp_no
+        JOIN
+    departments d ON de.dept_no = d.dept_no
+        JOIN
+    employees e ON e.emp_no = de.emp_no
+GROUP BY e.gender , calendar 
+ORDER BY  calendar;
+
+
+-- TABLE 3
+
+WITH cte as(SELECT AVG(salary) as avg_salary from salaries)
+SELECT SUM(CASE WHEN s.salary > c.avg_salary THEN 1 ELSE 0 END) as no__above_avg_salary,
+COUNT(s.salary) AS no_of_f_salary_contracts, e.gender,
+CONCAT(ROUND((SUM(CASE WHEN s.salary > c.avg_salary THEN 1 ELSE 0 END)/COUNT(s.salary))*100,2),'%') as percentage
+from salaries s join employees e on e.emp_no = s.emp_no
+CROSS JOIN cte c
+group by gender;
+
+
+-- TABLE 4
+
 SELECT 
-SUM(CASE WHEN c2.f_highest_salary > c1.avg_salary THEN 1 ELSE 0 END) as no_f_above_avg_salary,
-count(e.emp_no) as total_female_contracts,
-CONCAT(ROUND((SUM(CASE WHEN c2.f_highest_salary > c1.avg_salary THEN 1 ELSE 0 END)/count(e.emp_no))*100,2),'%') as percentage
-FROM employees e
-JOIN cte2 c2 ON c2.emp_no = e.emp_no
-cross JOIN cte1 c1;
-
-CREATE TEMPORARY TABLE f_highest_salaries
-SELECT
-	s.emp_no, MAX(s.salary) AS f_highest_salary
+	d.dept_name,
+    ROUND(AVG(s.salary), 2) AS avg_salary,
+    YEAR(s.from_date) AS calendar
 FROM
-	salaries s
-    JOIN
-employees e ON e.emp_no = s.emp_no AND e.gender ='F'
-GROUP BY e.emp_no;
+    dept_emp de
+        JOIN
+    salaries s ON de.emp_no = s.emp_no
+        JOIN
+    departments d ON de.dept_no = d.dept_no
+        JOIN
+    employees e ON e.emp_no = de.emp_no
+GROUP BY d.dept_name, calendar 
+ORDER BY  d.dept_name;
 
 
+-- TABLE 5
+
+SELECT * 
+FROM dept_emp 
+WHERE emp_no IN (
+    SELECT emp_no
+    FROM employees.dept_emp 
+    GROUP BY emp_no 
+    HAVING COUNT(emp_no) != 1
+);
 
 
-select * from f_highest_salaries;
+SELECT 
+    dep1.dept_no,d.dept_name,
+    SUM(CASE 
+            WHEN from_date = (SELECT to_date 
+                              FROM dept_emp AS dep2 
+                              WHERE dep1.emp_no = dep2.emp_no 
+                              AND dep1.dept_no != dep2.dept_no 
+                              AND dep1.from_date = dep2.to_date) 
+            THEN 1 
+            WHEN to_date = (SELECT from_date 
+                            FROM dept_emp AS dep2 
+                            WHERE dep1.emp_no = dep2.emp_no 
+                            AND dep1.dept_no != dep2.dept_no 
+                            AND dep1.to_date = dep2.from_date) 
+            THEN -1 
+            ELSE 0 
+        END) AS net_score
+FROM 
+    dept_emp AS dep1 join departments d on dep1.dept_no=d.dept_no
+GROUP BY 
+    dep1.dept_no
+ORDER BY net_score;
 
-WITH cte AS (SELECT s.emp_no, MAX(s.salary) AS f_highest_salary
-FROM salaries s 
-JOIN
-employees e ON e.emp_no = s.emp_no AND e.gender = 'F'
-GROUP BY s.emp_no
-LIMIT 10)
-SELECT * FROM f_highest_salaries f1 UNION ALL SELECT * FROM cte;
+
+-- Table 6
+
+SELECT 
+    emp_no, 
+    dept_no, 
+    from_date, 
+    to_date, 
+    CASE 
+        WHEN TIMESTAMPDIFF(YEAR, from_date, to_date) > 7000 THEN TIMESTAMPDIFF(YEAR, from_date, to_date) - 7977
+        ELSE TIMESTAMPDIFF(YEAR, from_date, to_date)
+    END AS diff_year
+FROM 
+    dept_emp;
 
 
-
-
-
-CREATE TEMPORARY TABLE dates
-SELECT
-	NOW() AS current_date_and_time,
-    DATE_SUB(NOW(), INTERVAL 1 MONTH) AS month_early,
-    DATE_SUB(NOW(), INTERVAL -1 YEAR) AS year_later;
-
-
+select a.emp_no, sum(a.diff_year)
+from ( SELECT 
+    emp_no, 
+    dept_no, 
+    from_date, 
+    to_date, 
+    CASE 
+        WHEN TIMESTAMPDIFF(YEAR, from_date, to_date) > 7000 THEN TIMESTAMPDIFF(YEAR, from_date, to_date) - 7977
+        ELSE TIMESTAMPDIFF(YEAR, from_date, to_date)
+    END AS diff_year
+FROM 
+    dept_emp) a 
+    group by a.emp_no
+    order by sum(a.diff_year) desc;
+    
